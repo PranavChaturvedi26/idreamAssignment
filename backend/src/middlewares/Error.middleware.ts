@@ -1,28 +1,14 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt.js";
+import Express from "express";
 
-export type AuthedRequest = Request & {
-  user?: { id: string; role: "ADMIN" | "CLIENT" };
-};
-
-export function authMiddleware(
-  req: AuthedRequest,
-  res: Response,
-  next: NextFunction,
+export function errorMiddleware(
+  err: Error,
+  _req: Express.Request,
+  res: Express.Response,
+  _next: Express.NextFunction,
 ) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "Missing or invalid Authorization header" });
-  }
+  console.error("Error:", err);
 
-  const token = header.split(" ")[1];
-  try {
-    const payload = verifyToken(token);
-    req.user = { id: payload.sub, role: payload.role };
-    next();
-  } catch {
-    return res.status(401).json({ message: "Invalid/expired token" });
-  }
+  const status = (err as any)?.statusCode || 500;
+  const message = err?.message || "Internal Server Error";
+  res.status(status).json({ message });
 }

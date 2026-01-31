@@ -22,7 +22,7 @@ export function authMiddleware(
     const payload = verifyToken(token);
     req.user = { id: payload.userId, role: payload.role };
     next();
-  } catch {
+  } catch (error) {
     return res.status(401).json({ message: "Invalid/expired token" });
   }
 }
