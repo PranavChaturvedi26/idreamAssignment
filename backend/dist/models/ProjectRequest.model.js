@@ -11,4 +11,4 @@ const projectRequestSchema = new Schema({
     reviewedAt: { type: Date },
 }, { timestamps: true });
 export const ProjectRequest = mongoose.model("ProjectRequests", projectRequestSchema);
-//# sourceMappingURL=ProjectRequest.model.js.map
+//# sourceMappingURL=projectRequest.model.js.map

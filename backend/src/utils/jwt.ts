@@ -6,9 +6,9 @@ export type JwtPayload = {
   role: "ADMIN" | "CLIENT";
 };
 
-export function signToken(payload: JwtPayload) {
+export function signToken(payload: string) {
   return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
+    expiresIn: "7d",
   });
 }
 

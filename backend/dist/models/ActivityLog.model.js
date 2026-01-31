@@ -8,5 +8,5 @@ const activityLogSchema = new Schema({
     ip: { type: String, default: "" },
     userAgent: { type: String, default: "" },
 }, { timestamps: true });
-export const ActivityLog = mongoose.model("ActivityLog", activityLogSchema);
-//# sourceMappingURL=ActivityLog.model.js.map
+export const ActivityLog = mongoose.model("ActivityLogs", activityLogSchema);
+//# sourceMappingURL=activityLog.model.js.map

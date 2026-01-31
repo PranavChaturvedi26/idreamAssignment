@@ -140,4 +140,4 @@ export declare const Project: mongoose.Model<{
 } & {
     __v: number;
 }>;
-//# sourceMappingURL=Project.model.d.ts.map
+//# sourceMappingURL=project.model.d.ts.map

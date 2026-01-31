@@ -110,4 +110,4 @@ export declare const ProjectRequest: mongoose.Model<{
 } & {
     __v: number;
 }>;
-//# sourceMappingURL=ProjectRequest.model.d.ts.map
+//# sourceMappingURL=projectRequest.model.d.ts.map

@@ -91,4 +91,4 @@ export declare const User: mongoose.Model<{
 } & {
     __v: number;
 }>;
-//# sourceMappingURL=User.models.d.ts.map
+//# sourceMappingURL=user.models.d.ts.map

@@ -130,4 +130,4 @@ export declare const ActivityLog: mongoose.Model<{
 } & {
     __v: number;
 }>;
-//# sourceMappingURL=ActivityLog.model.d.ts.map
+//# sourceMappingURL=activityLog.model.d.ts.map

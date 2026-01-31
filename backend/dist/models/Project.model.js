@@ -14,4 +14,4 @@ const projectSchema = new Schema({
 // fast search index on projectName and emailAddress
 projectSchema.index({ projectName: 1, emailAddress: 1 });
 export const Project = mongoose.model("Projects", projectSchema);
-//# sourceMappingURL=Project.model.js.map
+//# sourceMappingURL=project.model.js.map
