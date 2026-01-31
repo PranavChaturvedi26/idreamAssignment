@@ -5,4 +5,4 @@ export function errorMiddleware(err, _req, res, _next) {
     const message = err?.message || "Internal Server Error";
     res.status(status).json({ message });
 }
-//# sourceMappingURL=Error.middleware.js.map
+//# sourceMappingURL=error.middleware.js.map

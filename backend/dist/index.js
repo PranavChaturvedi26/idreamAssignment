@@ -4,8 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.route.js";
 import adminRoutes from "./routes/admin.route.js";
-import projectRoutes from "./routes/project.route.js";
-import { errorMiddleware } from "./middlewares/Error.middleware.js";
+import { projectRoutes } from "./routes/project.route.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 const app = express();
 // Middleware
 app.use(helmet());

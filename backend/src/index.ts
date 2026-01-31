@@ -3,7 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.route.js";
-import { adminRoutes } from "./routes/admin.route.js";
+import adminRoutes from "./routes/admin.route.js";
 import { projectRoutes } from "./routes/project.route.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 

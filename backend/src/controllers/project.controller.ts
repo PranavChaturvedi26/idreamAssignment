@@ -23,20 +23,27 @@ export const requestProject = async (
   next: NextFunction,
 ) => {
   try {
-    const { id: projectId } = req.params;
+    //  force params.id into a string safely
+    const rawId = (req.params as { id?: string }).id;
 
-    // ✅ validate ObjectId early (prevents CastError)
-    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    if (!rawId) {
+      return res.status(400).json({ message: "Project id is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(rawId)) {
       return res.status(400).json({ message: "Invalid project id" });
     }
+
+    const projectId = new mongoose.Types.ObjectId(rawId);
+    const userId = new mongoose.Types.ObjectId(req.user!.id);
 
     const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    // ✅ Mongoose will cast string to ObjectId automatically
+    //  types match schema: projectId: ObjectId, requestedBy: ObjectId
     const existing = await ProjectRequest.findOne({
       projectId,
-      requestedBy: req.user!.id,
+      requestedBy: userId,
       status: "PENDING",
     });
 
@@ -48,7 +55,7 @@ export const requestProject = async (
 
     const pr = await ProjectRequest.create({
       projectId,
-      requestedBy: req.user!.id,
+      requestedBy: userId,
       status: "PENDING",
     });
 

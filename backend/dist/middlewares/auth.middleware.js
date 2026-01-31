@@ -9,7 +9,7 @@ export function authMiddleware(req, res, next) {
     const token = header.split(" ")[1];
     try {
         const payload = verifyToken(token);
-        req.user = { id: payload.userId, role: payload.role };
+        req.user = { id: payload.user, role: payload.role };
         next();
     }
     catch (error) {
