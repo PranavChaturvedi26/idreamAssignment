@@ -4,6 +4,7 @@ import { User } from "../models/user.models.js";
 import { Project } from "../models/project.model.js";
 import { ProjectRequest } from "../models/projectRequest.model.js";
 import type { AuthedRequest } from "../middlewares/auth.middleware.js";
+import type { Response, NextFunction } from "express";
 
 const createUserSchema = z.object({
   username: z.string().min(3),
@@ -11,16 +12,45 @@ const createUserSchema = z.object({
   role: z.enum(["ADMIN", "CLIENT"]).default("CLIENT"),
 });
 
-const createProjectSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional().default(""),
-});
+const createProjectSchema = z
+  .object({
+    projectName: z.string().min(2),
+    emailAddress: z.string().email(),
+    contactNumber: z.string().min(10).max(15),
+
+    timeline: z.object({
+      startDate: z.coerce.date(), //  converts "2026-01-31" or ISO string to Date
+      endDate: z.coerce.date(),
+    }),
+  })
+  .superRefine((val, ctx) => {
+    const { startDate, endDate } = val.timeline;
+
+    // start date must be in the future (optional rule — keep if required)
+    const now = new Date();
+    if (startDate <= now) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timeline", "startDate"],
+        message: "Start date must be in the future",
+      });
+    }
+
+    // end must be after start
+    if (endDate <= startDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["timeline", "endDate"],
+        message: "End date must be after start date",
+      });
+    }
+  });
 
 const reviewRequestSchema = z.object({
   action: z.enum(["APPROVE", "DENY"]),
 });
 
-export const createUser = (async (req: AuthedRequest, res: Response) => {
+export const createUser = async (req: AuthedRequest, res: Response) => {
   const { username, password, role } = createUserSchema.parse(req.body);
 
   const existing = await User.findOne({ username });
@@ -34,61 +64,71 @@ export const createUser = (async (req: AuthedRequest, res: Response) => {
     message: "User created",
     user: { id: user._id, username: user.username, role: user.role },
   });
-});
+};
 
-export const viewAllUsers = (async (req: AuthedRequest, res: Response) => {
+export const viewAllUsers = async (req: AuthedRequest, res: Response) => {
   const users = await User.find({}, { password: 0 }).sort({
     createdAt: -1,
   });
   return res.json({ users });
-});
+};
 
-export const createProject = (async (req: AuthedRequest, res) => {
-  const { name, description } = createProjectSchema.parse(req.body);
+export const createProject = async (req: AuthedRequest, res: Response) => {
+  const { projectName, emailAddress, contactNumber, timeline } =
+    createProjectSchema.parse(req.body);
 
   const project = await Project.create({
-    name,
-    description,
+    projectName,
+    emailAddress,
+    contactNumber,
+    timeline: {
+      startDate: timeline.startDate,
+      endDate: timeline.endDate,
+    },
     createdBy: req.user!.id,
   });
 
   return res.status(201).json({ message: "Project created", project });
-});
+};
 
-export const viewAllProjects = (async (_req, res) => {
+export const viewAllProjects = async (req: AuthedRequest, res: Response) => {
   const projects = await Project.find().sort({ createdAt: -1 });
   return res.json({ projects });
-});
+};
 
-export const listProjectRequests = (async (_req, res) => {
+export const listProjectRequests = async (
+  req: AuthedRequest,
+  res: Response,
+) => {
   const requests = await ProjectRequest.find()
     .populate("projectId", "name")
     .populate("requestedBy", "username role")
     .sort({ createdAt: -1 });
 
   return res.json({ requests });
-});
+};
 
-export const reviewProjectRequest = (
-  async (req: AuthedRequest, res: Response) => {
-    const { action } = reviewRequestSchema.parse(req.body);
-    const requestId = req.params.id;
+export const reviewProjectRequest = async (
+  req: AuthedRequest,
+  res: Response,
+) => {
+  const { action } = reviewRequestSchema.parse(req.body);
+  const requestId = req.params.id;
 
-    const pr = await ProjectRequest.findById(requestId);
-    if (!pr) return res.status(404).json({ message: "Request not found" });
+  const pr = await ProjectRequest.findById(requestId);
+  if (!pr) return res.status(404).json({ message: "Request not found" });
 
-    if (pr.status !== "PENDING") {
-      return res.status(400).json({ message: `Request already ${pr.status}` });
-    }
+  if (pr.status !== "PENDING") {
+    return res.status(400).json({ message: `Request already ${pr.status}` });
+  }
 
-    pr.status = action === "APPROVE" ? "APPROVED" : "DENIED";
-    pr.reviewedBy = req.user!.id as any;
-    pr.reviewedAt = new Date();
-    await pr.save();
+  pr.status = action === "APPROVE" ? "APPROVED" : "DENIED";
+  pr.reviewedBy = req.user!.id as any;
+  pr.reviewedAt = new Date();
+  await pr.save();
 
-    return res.json({
-      message: `Request ${pr.status.toLowerCase()}`,
-      request: pr,
-    });
-  },
-);
+  return res.json({
+    message: `Request ${pr.status.toLowerCase()}`,
+    request: pr,
+  });
+};
